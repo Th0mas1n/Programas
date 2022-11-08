@@ -1,0 +1,210 @@
+import requests
+from datetime import datetime
+
+_ENDPOINT = "http://api.binance.com"
+nombre_archivo ="GUARDARDATOS.txt"
+
+headers = {'Accepts': 'application/json',  'X-CMC_PRO_API_KEY':  '5cde958e-3054-4be0-872a-1b5ee1f1f70b'}
+requests.get("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest",headers=headers).json()
+class Usuario(object):
+    def __init__(self, codigo):
+        self.codigo = codigo
+
+    def mostrarCodigo(self):
+        return self.codigo
+
+class Criptomoneda(object):
+    def __init__(self, nombre, cantidad):
+        self.nombre = nombre
+        self.cantidad = cantidad
+
+    def indicarCantidad(self, cantidad):
+        self.cantidad = cantidad
+
+    def mostrarNombre(self):
+        return self.nombre
+
+    def mostrarCantidad(self):
+        return self.cantidad
+
+    def calcularSaldo(self, cotizacion):
+        self.cantidad*cotizacion
+
+def _url(api):
+    return _ENDPOINT+api
+
+def get_price(cripto):
+    data = requests.get(_url("/api/v3/ticker/price?symbol="+cripto)).json()
+    precio = float(data["price"])
+    return precio
+
+def esmoneda(cripto):
+    criptos = ["BTC","BCC","LTC","ETH"]
+    if cripto in criptos:
+        return True
+    else:
+        print("ingrese una moneda valida")
+        return False
+
+def validarCodigo(codigo):
+    if codigo == usuario.codigo:
+        print("transaccion fallida, codigo invalido")
+        return False
+    else:
+        return True
+#validacion de las cantidades
+def cantidadSuficiente(moneda, cantidad):
+    aux = True
+    if(moneda == "BTC"):
+        if(BTC.cantidad >= cantidad):
+            return True
+        else:
+            aux = False
+    if(moneda == "ETH"):
+        if(ETH.cantidad >= cantidad):
+            return True
+        else:
+            aux = False
+    if(moneda == "BBC"):
+        if(BCC.cantidad >= cantidad):
+            return True
+        else:
+            aux = False
+    if(moneda == "LTC"):
+        if(LTC.cantidad >= cantidad):
+            return True
+        else:
+            aux = False
+    if(aux==False):
+        print("transaccion rechazada, su saldo: "+moneda+" es insuficiente")
+
+#Guardar registro en el documento txt
+class GuardarRegistro(object):
+    def __init__(self,moneda,codigo,transaccion,cantidad,usuario,mostrarcantidad):
+        self.moneda = moneda
+        self.transaccion = transaccion
+        self.codigo = codigo
+        self.cantidad = cantidad
+        self.usuario = usuario
+        self.mostrarcantidad = mostrarcantidad
+
+        archivo=open(nombre_archivo,"a")
+        dt=datetime.now()
+        archivo.write("\n"+"FECHA"+":"+dt.strftime("%A %d/%m/%Y %I:%M:%S%p")+",MONEDA: "+str(moneda)+" ESTADO: "+ str(codigo)+" CANTIDAD: "+str(cantidad)+" USUARIO: "+str(usuario)+" TOTAL ACUMULADO: "+ str(mostrarcantidad))
+        archivo.close()
+
+#Cantidades iniciales en la billetera
+BTC = Criptomoneda("BTC",5.5)
+ETH = Criptomoneda("ETH",1.54)
+BCC = Criptomoneda("BCC",3.5)
+LTC = Criptomoneda("LTC",4.62)
+#monedas que se esta utilizando
+monedas = [BTC,ETH,BCC,LTC]
+#codigo del usuario
+usuario = Usuario(1810)
+#menu de opciones
+while True:
+    print("____________________________________________")
+    print("   -------BILLETERA DIGITAL-------")
+    print("       Codigo de usuario: "+str(usuario.mostrarCodigo()))
+    print("          MENU DE OPCIONES")
+    print("____________________________________________")
+    print(("|  1.  Recibir cantidad                    |\n"
+           "|  2.  Tranferir dinero                    |\n"
+           "|  3.  Mostrar balance de moneda           |\n"
+           "|  4.  Mostrar balance general             |\n"
+           "|  5.  Mostrar historial de transacciones  |\n"
+           "|  6.  Salir del programa                  |"))
+    print("|__________________________________________|")
+    seleccion = int(input("--> Selecciona una opcion: "))
+
+#seleccion 1 Recibir cantidad
+    if(seleccion==1):
+        moneda = input("Ingrese la moneda a recibir: ")
+        while not esmoneda(moneda):
+            moneda = input("ingrese la moneda a recibir (BTC ETH BCC LTC): ")
+        cantidad = float(input(" ingrese la cantidad a recibir de "+moneda+ ": "))
+        codigo = int(input("ingrese el codigo del beneficiario: "))
+        while not validarCodigo(codigo):
+            codigo = int(input("ingrese codigo del emisor: "))
+        if(moneda)==("BTC"):
+            BTC.indicarCantidad(BTC.cantidad + cantidad)
+            GuardarRegistro(moneda,"Recibido",usuario, cantidad,codigo,BTC.mostrarCantidad())
+        elif(moneda)==("ETH"):
+            ETH.indicarCantidad(ETH.cantidad + cantidad)
+            GuardarRegistro(moneda,"Recibido",usuario, cantidad,codigo,ETH.mostrarCantidad())
+        elif(moneda)==("BCC"):
+            BCC.indicarCantidad(BCC.cantidad + cantidad)
+            GuardarRegistro(moneda,"Recibido",usuario, cantidad,codigo,BCC.mostrarCantidad())
+        elif(moneda)==("LTC"):
+            LTC.indicarCantidad(LTC.cantidad + cantidad)
+            GuardarRegistro(moneda,"Recibido",usuario, cantidad,codigo,LTC.mostrarCantidad())
+        print("\n  transaccion exitosa, se a�adio el saldo")
+#seleccion 2 Transferir monto
+    if(seleccion==2):
+        moneda = input("ingrese la moneda a transferir: ")
+        while not esmoneda(moneda):
+            moneda = input("ingrese la moneda a transferir (BTC ETH BCC LTC): ")
+        cantidad = float(input(" ingrese la cantidad a transferir de "+moneda+ ": "))
+        codigo = int(input("ingrese el codigo del beneficiario: "))
+        while not validarCodigo(codigo):
+            codigo = int(input("ingrese codigo al receptor: "))
+        if(moneda)==("BTC"):
+            BTC.indicarCantidad(BTC.cantidad - cantidad)
+            GuardarRegistro(moneda,"Enviado",usuario, cantidad,codigo,BTC.mostrarCantidad())
+        elif(moneda)==("ETH"):
+            ETH.indicarCantidad(ETH.cantidad - cantidad)
+            GuardarRegistro(moneda,"Enviado",usuario, cantidad,codigo,ETH.mostrarCantidad())
+        elif(moneda)==("BCC"):
+            BCC.indicarCantidad(BCC.cantidad - cantidad)
+            GuardarRegistro(moneda,"Enviado",usuario, cantidad,codigo,BCC.mostrarCantidad())
+        elif(moneda)==("LTC"):
+            LTC.indicarCantidad(LTC.cantidad - cantidad)
+            GuardarRegistro(moneda,"Enviado",usuario, cantidad,codigo,LTC.mostrarCantidad())
+        print("\n  Transferencia exitosa exitosa, se desconto el saldo")
+#seleccion 3 Mostrar balance una moneda
+    if(seleccion==3):
+        moneda=input("ingrese el nombre de la moneda: ")
+        while not esmoneda(moneda):
+            print("La moneda no es valida.")
+            moneda=input("Ingrese el nombre de la moneda (BTC ETH BCC LTC): ")
+        else:
+            data = get_price(moneda+"USDT")
+
+            if(moneda)==("BTC"):
+                BTC.indicarCantidad(BTC.cantidad)
+                print("Moneda: BTC Cantidad: "+str(BTC.mostrarCantidad())+" y su monto para el momento es: "+str(data))
+            elif(moneda)==("ETH"):
+                ETH.indicarCantidad(ETH.cantidad)
+                print("Moneda: ETH Cantidad: "+str(ETH.mostrarCantidad())+" y su monto para el momento es: "+str(data))
+            elif(moneda)==("BCC"):
+                BCC.indicarCantidad(BCC.cantidad)
+                print("Moneda: BCC Cantidad: "+str(BCC.mostrarCantidad())+" y su monto para el momento es: "+str(data))
+            elif(moneda)==("LTC"):
+                LTC.indicarCantidad(LTC.cantidad)
+                print("Moneda: LTC Cantidad: "+str(LTC.mostrarCantidad())+" y su monto para el momento es: "+str(data))
+#seleccion 4 Mostrar balance general
+    if(seleccion==4):
+        moneda = "BTC"
+        data = get_price(moneda+"USDT")
+        print("Moneda: BTC Cantidad: "+str(BTC.mostrarCantidad())+" y su monto para el momento es: "+str(data))
+        moneda = "ETH"
+        data = get_price(moneda+"USDT")
+        print("Moneda: ETH Cantidad: "+str(ETH.mostrarCantidad())+" y su monto para el momento es: "+str(data))
+        moneda = "BCC"
+        data = get_price(moneda+"USDT")
+        print("Moneda: BCC Cantidad: "+str(BCC.mostrarCantidad())+" y su monto para el momento es: "+str(data))
+        moneda = "LTC"
+        data = get_price(moneda+"USDT")
+        print("Moneda: LTC Cantidad: "+str(LTC.mostrarCantidad())+" y su monto para el momento es: "+str(data))
+#seleccion 5 Mostrar hist�rico de transacciones
+    if(seleccion==5):
+        nombre_archivo = "GUARDARDATOS.txt"
+        archivo=open(nombre_archivo,"r")
+        texto = archivo.read()
+        print(texto)   
+        archivo.close()
+#seleccion 6 Salir del programa
+    if(seleccion==6):
+        print("---------> El programa finalizo <---------")
+        break
